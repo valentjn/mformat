@@ -4,21 +4,25 @@ from __future__ import annotations
 import argparse
 import os
 import sys
-from typing import List
+from typing import List, Optional
 
+from .formatter import formatAst
 from .tokenizer import Tokenizer
 from .parser import parseTokens
-from .formatter import formatAst
+from .settings import Settings
 
 def formatFile(filePath: str) -> str:
   with open(filePath, "r") as f: code = f.read()
-  return formatCode(code)
+  settings = Settings()
+  settings.searchAndLoad(filePath)
+  return formatCode(code, settings)
 
-def formatCode(code: str) -> str:
+def formatCode(code: str, settings: Optional[Settings] = None) -> str:
+  if settings is None: settings = Settings()
   tokenizer = Tokenizer()
   tokens = tokenizer.tokenizeCode(code)
   ast = parseTokens(tokens)
-  formattedCode = formatAst(ast)
+  formattedCode = formatAst(ast, settings)
   return formattedCode
 
 def main() -> None:
