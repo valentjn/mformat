@@ -194,6 +194,21 @@ def parseStatementFragment(tokens: List[Token]) -> AstNode:
   node = divideAndConquerParseStatementFragmentWithClassName(tokens, "assignmentOperator")
   if node is not None: return node
 
+  if any((x.className == "comma") and (x.groupDepth == groupDepthOffset) for x in tokens):
+    node = AstNode("commaSeparatedList")
+    lastTopLevelCommaTokenIndex = -1
+
+    for i, token in enumerate(tokens):
+      if (token.className == "comma") and (token.groupDepth == groupDepthOffset):
+        node.appendChild(parseStatementFragment(tokens[lastTopLevelCommaTokenIndex+1:i]))
+        node.appendNewAstNodeAsChild(token)
+        lastTopLevelCommaTokenIndex = i
+
+    if lastTopLevelCommaTokenIndex < len(tokens) - 1:
+      node.appendChild(parseStatementFragment(tokens[lastTopLevelCommaTokenIndex+1:]))
+
+    return node
+
   topLevelOperatorTokenIndices = [i for i, token in enumerate(tokens)
       if (token.groupDepth == groupDepthOffset) and token.className.endswith("Operator")]
 
@@ -283,20 +298,6 @@ def parseStatementFragment(tokens: List[Token]) -> AstNode:
 
     for token in tokens[relevantTopLevelTokenIndices[-1]+1:]:
       irrelevantTokensAfterNode.appendNewAstNodeAsChild(token)
-
-    return node
-  elif any((x.className == "comma") and (x.groupDepth == groupDepthOffset) for x in tokens):
-    node = AstNode("commaSeparatedList")
-    lastTopLevelCommaTokenIndex = -1
-
-    for i, token in enumerate(tokens):
-      if (token.className == "comma") and (token.groupDepth == groupDepthOffset):
-        node.appendChild(parseStatementFragment(tokens[lastTopLevelCommaTokenIndex+1:i]))
-        node.appendNewAstNodeAsChild(token)
-        lastTopLevelCommaTokenIndex = i
-
-    if lastTopLevelCommaTokenIndex < len(tokens) - 1:
-      node.appendChild(parseStatementFragment(tokens[lastTopLevelCommaTokenIndex+1:]))
 
     return node
   else:
