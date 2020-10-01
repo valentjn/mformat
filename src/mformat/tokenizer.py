@@ -19,7 +19,7 @@ class Token(object):
     self.startPos = startPos
     self.className = className
     self.value: Union[str, int, float] = code
-    self.depth: Optional[int] = None
+    self.groupDepth: Optional[int] = None
     self.evaluate()
 
   def evaluate(self) -> None:
@@ -36,7 +36,7 @@ class Token(object):
         "blockComment", "lineComment", "lineContinuationComment", "newline", "whitespace"])
 
   def __repr__(self) -> str:
-    indent = (self.depth * "  " if self.depth is not None else "")
+    indent = (self.groupDepth * "  " if self.groupDepth is not None else "")
     return (f"{indent}Token(code={repr(self.code)}, startPos={repr(self.startPos)}, "
         f"className={repr(self.className)}, value={repr(self.value)})")
 
@@ -173,7 +173,7 @@ class Tokenizer(object):
     self._tokens.append(token)
     self._pos += len(token.code)
     if token.isRelevant(): self._lastRelevantToken = token
-    token.depth = len(self._groupingStack)
+    token.groupDepth = len(self._groupingStack)
 
     if token.className.startswith("opening"):
       self._groupingStack.append(token.className[7:])
@@ -182,4 +182,4 @@ class Tokenizer(object):
           if (len(self._groupingStack) > 0) and "WithIdentifier" in self._groupingStack[-1]
           else "WithoutIdentifier")
       self._groupingStack.pop()
-      token.depth -= 1
+      token.groupDepth -= 1
