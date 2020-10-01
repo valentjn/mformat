@@ -3,6 +3,7 @@
 from __future__ import annotations
 import argparse
 import os
+import sys
 from typing import List
 
 from .tokenizer import Tokenizer
@@ -35,6 +36,6 @@ def main() -> None:
     filePaths = [args.path]
 
   for filePath in filePaths:
-    print(f"Processing '{filePath}'...")
+    print(f"Processing '{filePath}'...", file=sys.stderr)
     code = formatFile(filePath)
     print(code)
