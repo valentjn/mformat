@@ -61,6 +61,11 @@ class AstNode(object):
 
     return result
 
+  def __str__(self) -> str:
+    code = (self.token.code if self.token is not None else "")
+    code += "".join(str(x) for x in self.children)
+    return code
+
 
 
 def parseTokens(tokens: List[Token]) -> AstNode:
