@@ -84,7 +84,9 @@ class AstNode(object):
 def parseTokens(tokens: List[Token], settings: Settings) -> AstNode:
   statements = splitIntoStatements(tokens)
   ast = parseStatements(statements)
-  computeBlockDepth(ast, settings)
+  functionsHaveEnd = checkIfFunctionsHaveEnd(ast)
+  if functionsHaveEnd is None: functionsHaveEnd = False
+  computeBlockDepth(ast, functionsHaveEnd, settings)
   return ast
 
 
@@ -349,14 +351,67 @@ def goUpToParent(node: AstNode, parentClassNameSuffix: str) -> AstNode:
 
 
 
-def computeBlockDepth(node: AstNode, settings: Settings, blockDepth: int = 0) -> None:
-  node.blockDepth = blockDepth
-
-  if (node.parent is not None) and node.parent.className.endswith("Block"):
-    if (node.className in ["case", "otherwise"]) and settings.indentCaseOtherwise: blockDepth += 1
-
-    for child in node.children:
-      childBlockDepth = (blockDepth if child.className == "statement" else blockDepth + 1)
-      computeBlockDepth(child, settings, childBlockDepth)
+def checkIfFunctionsHaveEnd(node: AstNode) -> Optional[bool]:
+  if node.className == "functionBlock":
+    return (len(node.children) >= 2) and containsEnd(node.children[1])
   else:
-    for child in node.children: computeBlockDepth(child, settings, blockDepth)
+    for child in node.children:
+      if (functionsHaveEnd := checkIfFunctionsHaveEnd(child)) is not None: return functionsHaveEnd
+
+    return None
+
+
+
+def containsEnd(node: AstNode) -> bool:
+  if (node.className == "keyword") and (node.token is not None) and (node.token.code == "end"):
+    return True
+  else:
+    return any(containsEnd(x) for x in node.children)
+
+
+
+def computeBlockDepth(ast: AstNode, functionsHaveEnd: bool, settings: Settings) -> None:
+  nodeStack = [(ast, 0, 0)]
+  mainFunctionStarted = False
+  mainFunctionEnded = False
+
+  while len(nodeStack) > 0:
+    node, blockDepth, functionDepth = nodeStack.pop()
+    node.blockDepth = blockDepth
+
+    if (node.parent is not None) and node.parent.className.endswith("Block"):
+      if (node.className in ["case", "otherwise"]) and settings.indentCaseOtherwise: blockDepth += 1
+
+      parentIsFunction = (node.parent.className == "functionBlock")
+
+      if parentIsFunction:
+        if not mainFunctionStarted:
+          mainFunctionStarted = True
+        elif (not functionsHaveEnd) or (functionDepth == 0):
+          mainFunctionEnded = True
+
+      parentIsMainFunction = parentIsFunction and (not mainFunctionEnded) and (functionDepth == 0)
+      parentIsNestedFunction = parentIsFunction and functionsHaveEnd and (functionDepth >= 1)
+      parentIsLocalFunction = (parentIsFunction and (not parentIsMainFunction)
+          and (not parentIsNestedFunction))
+      childFunctionDepth = functionDepth
+
+      if parentIsLocalFunction: blockDepth = 0
+
+      if parentIsFunction and (functionsHaveEnd or (functionDepth == 0)):
+        childFunctionDepth += 1
+
+      for child in node.children[::-1]:
+        childBlockDepth = blockDepth
+
+        if ((child.className != "statement")
+              and ((not parentIsFunction)
+                or (parentIsMainFunction and settings.indentMainFunction)
+                or (parentIsLocalFunction and settings.indentLocalFunction)
+                or (parentIsNestedFunction and settings.indentNestedFunction))):
+          childBlockDepth += 1
+
+        nodeStack.append((child, childBlockDepth, childFunctionDepth))
+    else:
+      for child in node.children[::-1]:
+        nodeStack.append((child, blockDepth, functionDepth))

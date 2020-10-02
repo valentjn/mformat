@@ -8,6 +8,9 @@ class Settings(object):
   def __init__(self) -> None:
     self.indent = 2
     self.indentCaseOtherwise = True
+    self.indentMainFunction = False
+    self.indentLocalFunction = False
+    self.indentNestedFunction = True
     self.omitSpaceAfterComma = True
     self.omitSpaceAfterCommaMaxLength = 1
     self.omitSpaceAroundColon = True
