@@ -19,6 +19,8 @@ def formatAst(ast: AstNode, settings: Settings) -> str:
 
   return code
 
+
+
 def removeWhitespaces(node: AstNode) -> None:
   oldChildren = list(node.children)
 
@@ -27,6 +29,8 @@ def removeWhitespaces(node: AstNode) -> None:
       del node.children[len(oldChildren) - i - 1]
 
   for child in node.children: removeWhitespaces(child)
+
+
 
 def insertWhitespaces(node: AstNode, settings: Settings) -> None:
   if node.className.endswith("OperatorNode"):
@@ -56,6 +60,8 @@ def insertWhitespaces(node: AstNode, settings: Settings) -> None:
     node.appendNewAstNodeAsChild(Token(" ", -1, "whitespace"))
 
   for child in node.children: insertWhitespaces(child, settings)
+
+
 
 def checkMaximumLengthOfArguments(node: AstNode, limit: int, excludeClassName: str) -> bool:
   return all(len(str(child)) <= limit for child in node.children
