@@ -7,6 +7,10 @@ import os
 class Settings(object):
   def __init__(self) -> None:
     self.indent = 2
+    self.omitSpaceAfterComma = True
+    self.omitSpaceAfterCommaMaxLength = 1
+    self.omitSpaceAroundColon = True
+    self.omitSpaceAroundColonMaxLength = 5
 
   def searchAndLoad(self, codeFilePath: str) -> bool:
     curDirPath = os.path.dirname(os.path.abspath(codeFilePath))
