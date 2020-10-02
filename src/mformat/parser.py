@@ -55,6 +55,16 @@ class AstNode(object):
     self.children.append(node)
     return node
 
+  def insertNewAstNodeAsChild(self, index: int, tokenOrClassName: Union[str, Token]) -> AstNode:
+    child = AstNode(tokenOrClassName, self)
+    self.children.insert(index, child)
+    return child
+
+  def insertChild(self, index: int, node: AstNode) -> AstNode:
+    node.parent = self
+    self.children.insert(index, node)
+    return node
+
   def __repr__(self, level: int=0) -> str:
     result = "{}{}".format(level * "  ", self.className)
     if self.token is not None: result += f"(code={repr(self.token.code)})"

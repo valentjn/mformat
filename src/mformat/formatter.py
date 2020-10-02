@@ -37,7 +37,7 @@ def indent(node: AstNode, settings: Settings) -> None:
   if node.className == "statement":
     if node.blockDepth is not None:
       indentation = (node.blockDepth * settings.indent) * " "
-      node.children.insert(0, AstNode(Token(indentation, -1, "whitespace"), node))
+      node.insertNewAstNodeAsChild(0, Token(indentation, -1, "whitespace"))
   else:
     for child in node.children: indent(child, settings)
 
@@ -52,8 +52,8 @@ def insertWhitespaces(node: AstNode, settings: Settings) -> None:
             node, settings.omitSpaceAroundColonMaxLength, "colonOperator"))
 
     if insertSpaces:
-      node.children.insert(2, AstNode(Token(" ", -1, "whitespace"), node))
-      node.children.insert(1, AstNode(Token(" ", -1, "whitespace"), node))
+      node.insertNewAstNodeAsChild(2, Token(" ", -1, "whitespace"))
+      node.insertNewAstNodeAsChild(1, Token(" ", -1, "whitespace"))
   elif node.className == "commaSeparatedList":
     insertSpaces = not (settings.omitSpaceAfterComma
         and checkMaximumLengthOfArguments(node, settings.omitSpaceAfterCommaMaxLength, "comma"))
@@ -64,7 +64,7 @@ def insertWhitespaces(node: AstNode, settings: Settings) -> None:
       for i, child in enumerate(oldChildren[::-1]):
         if child.className == "comma":
           index = len(oldChildren) - i - 1
-          node.children.insert(index + 1, AstNode(Token(" ", -1, "whitespace"), node))
+          node.insertNewAstNodeAsChild(index + 1, Token(" ", -1, "whitespace"))
     else:
       return
   elif node.className in ["keyword", "semicolon"]:
