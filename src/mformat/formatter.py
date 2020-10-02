@@ -12,6 +12,7 @@ def formatAst(ast: AstNode, settings: Settings) -> str:
   ast = copy.deepcopy(ast)
 
   removeWhitespaces(ast)
+  indent(ast, settings)
   insertWhitespaces(ast, settings)
 
   code = str(ast)
@@ -29,6 +30,16 @@ def removeWhitespaces(node: AstNode) -> None:
       del node.children[len(oldChildren) - i - 1]
 
   for child in node.children: removeWhitespaces(child)
+
+
+
+def indent(node: AstNode, settings: Settings) -> None:
+  if node.className == "statement":
+    if node.blockDepth is not None:
+      indentation = (node.blockDepth * settings.indent) * " "
+      node.children.insert(0, AstNode(Token(indentation, -1, "whitespace"), node))
+  else:
+    for child in node.children: indent(child, settings)
 
 
 

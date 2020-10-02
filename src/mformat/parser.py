@@ -3,6 +3,7 @@
 from __future__ import annotations
 from typing import cast, List, Optional, Union
 
+from .settings import Settings
 from .tokenizer import Token
 
 # from https://www.mathworks.com/help/matlab/matlab_prog/operator-precedence.html
@@ -42,6 +43,7 @@ class AstNode(object):
 
     self.parent = parent
     self.children: List[AstNode] = []
+    self.blockDepth: Optional[int] = None
 
   def appendNewAstNodeAsChild(self, tokenOrClassName: Union[str, Token]) -> AstNode:
     child = AstNode(tokenOrClassName, self)
@@ -68,9 +70,10 @@ class AstNode(object):
 
 
 
-def parseTokens(tokens: List[Token]) -> AstNode:
+def parseTokens(tokens: List[Token], settings: Settings) -> AstNode:
   statements = splitIntoStatements(tokens)
   ast = parseStatements(statements)
+  computeBlockDepth(ast, settings)
   return ast
 
 
@@ -332,3 +335,17 @@ def goUpToParent(node: AstNode, parentClassNameSuffix: str) -> AstNode:
     node = node.parent
 
   return node
+
+
+
+def computeBlockDepth(node: AstNode, settings: Settings, blockDepth: int = 0) -> None:
+  node.blockDepth = blockDepth
+
+  if (node.parent is not None) and node.parent.className.endswith("Block"):
+    if (node.className in ["case", "otherwise"]) and settings.indentCaseOtherwise: blockDepth += 1
+
+    for child in node.children:
+      childBlockDepth = (blockDepth if child.className == "statement" else blockDepth + 1)
+      computeBlockDepth(child, settings, childBlockDepth)
+  else:
+    for child in node.children: computeBlockDepth(child, settings, blockDepth)

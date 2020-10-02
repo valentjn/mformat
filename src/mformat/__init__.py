@@ -21,7 +21,7 @@ def formatCode(code: str, settings: Optional[Settings] = None) -> str:
   if settings is None: settings = Settings()
   tokenizer = Tokenizer()
   tokens = tokenizer.tokenizeCode(code)
-  ast = parseTokens(tokens)
+  ast = parseTokens(tokens, settings)
   formattedCode = formatAst(ast, settings)
   return formattedCode
 
