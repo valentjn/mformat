@@ -51,6 +51,7 @@ class AstNode(object):
     return child
 
   def appendChild(self, node: AstNode) -> AstNode:
+    node.parent = self
     self.children.append(node)
     return node
 
