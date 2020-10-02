@@ -127,15 +127,17 @@ def parseStatements(statements: List[List[Token]]) -> AstNode:
             ["case", "catch", "classdef", "else", "elseif", "end", "for",
             "function", "if", "otherwise", "parfor", "switch", "try", "while"])):
       if keyword in ["classdef", "for", "function", "if", "parfor", "switch", "try", "while"]:
-        curNode = curNode.appendNewAstNodeAsChild("block").appendNewAstNodeAsChild(keyword)
+        curNode = curNode.appendNewAstNodeAsChild(f"{keyword}Block")
+        curNode = curNode.appendNewAstNodeAsChild(keyword)
         curNode.appendChild(statementAstNode)
         curNode = curNode.appendNewAstNodeAsChild("statementSequence")
       elif keyword in ["case", "catch", "else", "elseif", "otherwise"]:
-        curNode = goUpToParent(curNode, "block").appendNewAstNodeAsChild(keyword)
+        curNode = goUpToParent(curNode, "Block")
+        curNode = curNode.appendNewAstNodeAsChild(keyword)
         curNode.appendChild(statementAstNode)
         curNode = curNode.appendNewAstNodeAsChild("statementSequence")
       elif keyword == "end":
-        curNode = goUpToParent(curNode, "block")
+        curNode = goUpToParent(curNode, "Block")
         curNode.appendChild(statementAstNode)
         assert curNode.parent is not None
         curNode = curNode.parent
@@ -324,8 +326,8 @@ def divideAndConquerParseStatementFragment(tokens: List[Token], i: int) -> AstNo
 
 
 
-def goUpToParent(node: AstNode, parentClassName: str) -> AstNode:
-  while node.className != parentClassName:
+def goUpToParent(node: AstNode, parentClassNameSuffix: str) -> AstNode:
+  while not node.className.endswith(parentClassNameSuffix):
     assert node.parent is not None
     node = node.parent
 
