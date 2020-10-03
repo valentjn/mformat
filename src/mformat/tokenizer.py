@@ -5,6 +5,8 @@ from typing import List, Optional, Union
 
 import re
 
+
+
 class TokenClass(object):
   def __init__(self, name: str, pattern: Union[re.Pattern[str], str]) -> None:
     self.name = name
@@ -12,6 +14,8 @@ class TokenClass(object):
 
   def __repr__(self) -> str:
     return self.name
+
+
 
 class Token(object):
   def __init__(self, code: str, startPos: int, className: str) -> None:
@@ -39,6 +43,8 @@ class Token(object):
     indent = (self.groupDepth * "  " if self.groupDepth is not None else "")
     return (f"{indent}Token(code={repr(self.code)}, startPos={repr(self.startPos)}, "
         f"className={repr(self.className)}, value={repr(self.value)})")
+
+
 
 class Tokenizer(object):
   _blockCommentTokenClass = TokenClass("blockComment", r"%\{(\n(.|\n)*\n|\n)[ \t]*%\}(?=\n|$)")
