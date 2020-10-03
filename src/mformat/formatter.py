@@ -9,6 +9,16 @@ from .parser import AstNode
 from .settings import Settings
 from .tokenizer import Token
 
+
+
+class ArtificialToken(Token):
+  startPos = -1
+
+  def __init__(self, code: str, className: str) -> None:
+    Token.__init__(self, code, ArtificialToken.startPos, className)
+
+
+
 def formatAst(ast: AstNode, settings: Settings) -> str:
   ast = copy.deepcopy(ast)
 
@@ -50,7 +60,7 @@ def insertNewlinesBetweenStatements(ast: AstNode) -> None:
       newlineNode = newlineNode.goToNext("newline")
 
     if (numberOfNewlines == 0) and (str(nextStatementNode) != "\n"):
-      curStatementNode.appendNewAstNodeAsChild(Token("\n", -1, "newline"))
+      curStatementNode.appendNewAstNodeAsChild(ArtificialToken("\n", "newline"))
 
     curStatementNode = nextStatementNode
     nextStatementNode = nextStatementNode.goToNext("statement")
@@ -81,7 +91,7 @@ def indent(node: AstNode, settings: Settings) -> None:
     if node.blockDepth is not None:
       indentation = (node.blockDepth * settings.indent) * " "
       index = (1 if (len(node.children) >= 1) and (node.children[0].className == "newline") else 0)
-      node.insertNewAstNodeAsChild(index, Token(indentation, -1, "whitespace"))
+      node.insertNewAstNodeAsChild(index, ArtificialToken(indentation, "whitespace"))
   else:
     for child in node.children: indent(child, settings)
 
@@ -96,8 +106,8 @@ def insertWhitespaces(node: AstNode, settings: Settings) -> None:
             node, settings.omitSpaceAroundColonMaxLength, "colonOperator"))
 
     if insertSpaces:
-      node.insertNewAstNodeAsChild(2, Token(" ", -1, "whitespace"))
-      node.insertNewAstNodeAsChild(1, Token(" ", -1, "whitespace"))
+      node.insertNewAstNodeAsChild(2, ArtificialToken(" ", "whitespace"))
+      node.insertNewAstNodeAsChild(1, ArtificialToken(" ", "whitespace"))
   elif node.className == "commaSeparatedList":
     insertSpaces = not (settings.omitSpaceAfterComma
         and checkMaximumLengthOfArguments(node, settings.omitSpaceAfterCommaMaxLength, "comma"))
@@ -108,11 +118,11 @@ def insertWhitespaces(node: AstNode, settings: Settings) -> None:
       for i, child in enumerate(oldChildren[::-1]):
         if child.className == "comma":
           index = len(oldChildren) - i - 1
-          node.insertNewAstNodeAsChild(index + 1, Token(" ", -1, "whitespace"))
+          node.insertNewAstNodeAsChild(index + 1, ArtificialToken(" ", "whitespace"))
     else:
       return
   elif node.className in ["keyword", "semicolon"]:
-    node.appendNewAstNodeAsChild(Token(" ", -1, "whitespace"))
+    node.appendNewAstNodeAsChild(ArtificialToken(" ", "whitespace"))
 
   for child in node.children: insertWhitespaces(child, settings)
 
