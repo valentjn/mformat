@@ -37,7 +37,7 @@ def removeWhitespaces(node: AstNode) -> None:
 
 
 def insertNewlinesBetweenStatements(ast: AstNode) -> None:
-  curStatementNode = ast.goToChild("statement")
+  curStatementNode = ast.goToDescendant("statement")
   if curStatementNode is None: return
   nextStatementNode = curStatementNode.goToNext("statement")
 
@@ -58,18 +58,18 @@ def insertNewlinesBetweenStatements(ast: AstNode) -> None:
 
 
 def removeSuperfluousSemicolons(ast: AstNode) -> None:
-  blockNode = ast.goToChild("Block")
+  blockNode = ast.goToDescendant("Block")
 
   while blockNode is not None:
     if blockNode.className == "functionBlock":
       statementNodes = []
     else:
-      statementNodes = [blockNode.goToChild("statement"), blockNode.children[-1]]
+      statementNodes = [blockNode.goToDescendant("statement"), blockNode.children[-1]]
 
     for statementNode in statementNodes:
       if statementNode is None: continue
 
-      while (semicolonNode := statementNode.goToChild("semicolon")) is not None:
+      while (semicolonNode := statementNode.goToDescendant("semicolon")) is not None:
         semicolonNode.remove()
 
     blockNode = blockNode.goToNext("Block")

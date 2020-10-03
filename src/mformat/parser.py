@@ -70,7 +70,7 @@ class AstNode(object):
     parentChildren = self.parent.children
     del parentChildren[parentChildren.index(self)]
 
-  def goToParent(self, suffix: str) -> Optional[AstNode]:
+  def goToAncestor(self, suffix: str) -> Optional[AstNode]:
     node = self
 
     while not node.className.endswith(suffix):
@@ -79,14 +79,14 @@ class AstNode(object):
 
     return node
 
-  def goToChild(self, suffix: str, reverse: bool = False,
+  def goToDescendant(self, suffix: str, reverse: bool = False,
         excludeNode: bool = False) -> Optional[AstNode]:
     if (not excludeNode) and self.className.endswith(suffix): return self
     children = self.children
     if reverse: children = children[::-1]
 
     for child in children:
-      nextNode = child.goToChild(suffix, reverse)
+      nextNode = child.goToDescendant(suffix, reverse)
       if nextNode is not None: return nextNode
 
     return None
@@ -96,7 +96,7 @@ class AstNode(object):
 
   def goToNext(self, suffix: str, reverse: bool = False) -> Optional[AstNode]:
     node = self
-    nextNode = node.goToChild(suffix, reverse, True)
+    nextNode = node.goToDescendant(suffix, reverse, True)
     if nextNode is not None: return nextNode
 
     while node.parent is not None:
@@ -107,7 +107,7 @@ class AstNode(object):
           else range(nodeIndex + 1, len(node.children)))
 
       for i in childIndexRange:
-        nextNode = node.children[i].goToChild(suffix, reverse)
+        nextNode = node.children[i].goToDescendant(suffix, reverse)
         if nextNode is not None: return nextNode
 
     return None
@@ -234,16 +234,16 @@ def parseStatements(statements: List[List[Token]]) -> AstNode:
         curNode.appendChild(statementAstNode)
         curNode = curNode.appendNewAstNodeAsChild("statementSequence")
       elif keyword in ["case", "catch", "else", "elseif", "otherwise"]:
-        parent = curNode.goToParent("Block")
-        assert parent is not None
-        curNode = parent
+        ancestor = curNode.goToAncestor("Block")
+        assert ancestor is not None
+        curNode = ancestor
         curNode = curNode.appendNewAstNodeAsChild(keyword)
         curNode.appendChild(statementAstNode)
         curNode = curNode.appendNewAstNodeAsChild("statementSequence")
       elif keyword == "end":
-        parent = curNode.goToParent("Block")
-        assert parent is not None
-        curNode = parent
+        ancestor = curNode.goToAncestor("Block")
+        assert ancestor is not None
+        curNode = ancestor
         curNode.appendChild(statementAstNode)
         assert curNode.parent is not None
         curNode = curNode.parent
