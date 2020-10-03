@@ -112,6 +112,19 @@ class AstNode(object):
 
     return None
 
+  def isAncestor(self, other: AstNode) -> bool:
+    node = other
+    if node == self: return True
+
+    while node.parent is not None:
+      node = node.parent
+      if node == self: return True
+
+    return False
+
+  def isDescendant(self, other: AstNode) -> bool:
+    return other.isAncestor(self)
+
   def _getHierarchy(self) -> List[Tuple[AstNode, int]]:
     hierarchy = []
     node = self
