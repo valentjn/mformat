@@ -14,6 +14,7 @@ def formatAst(ast: AstNode, settings: Settings) -> str:
 
   removeWhitespaces(ast)
   insertNewlinesBetweenStatements(ast)
+  removeSuperfluousSemicolons(ast)
   indent(ast, settings)
   insertWhitespaces(ast, settings)
 
@@ -53,6 +54,20 @@ def insertNewlinesBetweenStatements(ast: AstNode) -> None:
 
     curStatementNode = nextStatementNode
     nextStatementNode = goToNextNode(nextStatementNode, "statement")
+
+
+
+def removeSuperfluousSemicolons(ast: AstNode) -> None:
+  blockNode = goToChild(ast, "Block")
+
+  while blockNode is not None:
+    statementNode = goToChild(blockNode, "statement")
+    if statementNode is None: break
+
+    while (semicolonNode := goToChild(statementNode, "semicolon")) is not None:
+      semicolonNode.remove()
+
+    blockNode = goToNextNode(blockNode, "Block")
 
 
 

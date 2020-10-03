@@ -65,6 +65,11 @@ class AstNode(object):
     self.children.insert(index, node)
     return node
 
+  def remove(self) -> None:
+    assert self.parent is not None
+    parentChildren = self.parent.children
+    del parentChildren[parentChildren.index(self)]
+
   def _getHierarchy(self) -> List[Tuple[AstNode, int]]:
     hierarchy = []
     node = self
