@@ -61,11 +61,16 @@ def removeSuperfluousSemicolons(ast: AstNode) -> None:
   blockNode = ast.goToChild("Block")
 
   while blockNode is not None:
-    statementNode = blockNode.goToChild("statement")
-    if statementNode is None: break
+    if blockNode.className == "functionBlock":
+      statementNodes = []
+    else:
+      statementNodes = [blockNode.goToChild("statement"), blockNode.children[-1]]
 
-    while (semicolonNode := statementNode.goToChild("semicolon")) is not None:
-      semicolonNode.remove()
+    for statementNode in statementNodes:
+      if statementNode is None: continue
+
+      while (semicolonNode := statementNode.goToChild("semicolon")) is not None:
+        semicolonNode.remove()
 
     blockNode = blockNode.goToNext("Block")
 
