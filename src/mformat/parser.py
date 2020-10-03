@@ -202,7 +202,7 @@ def splitIntoStatements(tokens: List[Token]) -> List[List[Token]]:
 
     prevToken = token
 
-  statements.append(curStatement)
+  if len(curStatement) > 0: statements.append(curStatement)
 
   return statements
 
