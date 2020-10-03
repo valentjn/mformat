@@ -19,7 +19,7 @@ def formatAst(ast: AstNode, settings: Settings) -> str:
   insertWhitespaces(ast, settings)
 
   code = str(ast)
-  code = re.sub(r"([^ ]) +$", r"\1", code, flags=re.MULTILINE)
+  code = re.sub(r"([^ ]|^) +$", r"\1", code, flags=re.MULTILINE)
 
   return code
 
