@@ -93,30 +93,30 @@ def parseTokens(tokens: List[Token], settings: Settings) -> AstNode:
 
 def splitIntoStatements(tokens: List[Token]) -> List[List[Token]]:
   statements: List[List[Token]] = []
-  currentStatement = []
-  previousToken = None
+  curStatement = []
+  prevToken = None
 
   for token in tokens:
-    currentStatement.append(token)
+    curStatement.append(token)
 
     if ((token.className == "semicolon")
           or ((token.className == "comma") and (token.groupDepth == 0))
           or ((token.className == "newline")
-            and (previousToken is not None)
-            and (previousToken.className != "lineContinuationComment"))):
+            and (prevToken is not None)
+            and (prevToken.className != "lineContinuationComment"))):
       # to join newlines with last statement
-      #if ((token.className == "newline") and (len(currentStatement) == 1)
+      #if ((token.className == "newline") and (len(curStatement) == 1)
       #      and (len(statements) > 0)):
       #  statements[-1].append(token)
       #else:
-      #  statements.append(currentStatement)
+      #  statements.append(curStatement)
 
-      statements.append(currentStatement)
-      currentStatement = []
+      statements.append(curStatement)
+      curStatement = []
 
-    previousToken = token
+    prevToken = token
 
-  statements.append(currentStatement)
+  statements.append(curStatement)
 
   return statements
 

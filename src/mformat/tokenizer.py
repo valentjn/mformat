@@ -101,9 +101,9 @@ class Tokenizer(object):
     self._code = ""
     self._tokens: List[Token] = []
     self._pos = 0
-    self._currentLine = ""
-    self._posInCurrentLine = 0
-    self._onlyWhitespaceLeftOfPosInCurrentLine = True
+    self._curLine = ""
+    self._posInCurLine = 0
+    self._onlyWhitespaceLeftOfPosInCurLine = True
     self._lastRelevantToken: Optional[Token] = None
     self._groupingStack: List[str] = []
 
@@ -117,7 +117,7 @@ class Tokenizer(object):
     while self._pos < len(self._code):
       self._updateLineInfo()
 
-      if (self._onlyWhitespaceLeftOfPosInCurrentLine
+      if (self._onlyWhitespaceLeftOfPosInCurLine
             and self._matchTokenClass(self._blockCommentTokenClass)):
         continue
       elif ((self._lastRelevantToken is not None)
@@ -152,13 +152,13 @@ class Tokenizer(object):
     while (lineStartPos >= 0) and (self._code[lineStartPos] != "\n"): lineStartPos -= 1
     lineStartPos += 1
 
-    self._currentLine = self._code[lineStartPos:lineEndPos]
-    self._posInCurrentLine = self._pos - lineStartPos
-    self._onlyWhitespaceLeftOfPosInCurrentLine = True
+    self._curLine = self._code[lineStartPos:lineEndPos]
+    self._posInCurLine = self._pos - lineStartPos
+    self._onlyWhitespaceLeftOfPosInCurLine = True
 
-    for i in range(self._posInCurrentLine):
-      if (self._currentLine[i] != " ") and (self._currentLine[i] != "\t"):
-        self._onlyWhitespaceLeftOfPosInCurrentLine = False
+    for i in range(self._posInCurLine):
+      if (self._curLine[i] != " ") and (self._curLine[i] != "\t"):
+        self._onlyWhitespaceLeftOfPosInCurLine = False
         break
 
   def _matchTokenClass(self, tokenClass: TokenClass) -> bool:
