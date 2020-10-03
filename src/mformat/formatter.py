@@ -13,7 +13,7 @@ def formatAst(ast: AstNode, settings: Settings) -> str:
   ast = copy.deepcopy(ast)
 
   removeWhitespaces(ast)
-  insertNewlines(ast)
+  insertNewlinesBetweenStatements(ast)
   indent(ast, settings)
   insertWhitespaces(ast, settings)
 
@@ -35,7 +35,7 @@ def removeWhitespaces(node: AstNode) -> None:
 
 
 
-def insertNewlines(ast: AstNode) -> None:
+def insertNewlinesBetweenStatements(ast: AstNode) -> None:
   curStatementNode = goToChild(ast, "statement")
   if curStatementNode is None: return
   nextStatementNode = goToNextNode(curStatementNode, "statement")
@@ -56,11 +56,11 @@ def insertNewlines(ast: AstNode) -> None:
 
 
 
-def goToPrevNode(node: AstNode, nextNodeClassName: str) -> Optional[AstNode]:
-  return goToNextNode(node, nextNodeClassName, True)
+def goToPrevNode(node: AstNode, suffix: str) -> Optional[AstNode]:
+  return goToNextNode(node, suffix, True)
 
-def goToNextNode(node: AstNode, nextNodeClassName: str, reverse: bool = False) -> Optional[AstNode]:
-  nextNode = goToChild(node, nextNodeClassName, reverse, True)
+def goToNextNode(node: AstNode, suffix: str, reverse: bool = False) -> Optional[AstNode]:
+  nextNode = goToChild(node, suffix, reverse, True)
   if nextNode is not None: return nextNode
 
   while node.parent is not None:
@@ -71,19 +71,19 @@ def goToNextNode(node: AstNode, nextNodeClassName: str, reverse: bool = False) -
         else range(nodeIndex + 1, len(node.children)))
 
     for i in childIndexRange:
-      nextNode = goToChild(node.children[i], nextNodeClassName, reverse)
+      nextNode = goToChild(node.children[i], suffix, reverse)
       if nextNode is not None: return nextNode
 
   return None
 
-def goToChild(node: AstNode, nextNodeClassName: str, reverse: bool = False,
+def goToChild(node: AstNode, suffix: str, reverse: bool = False,
       excludeNode: bool = False) -> Optional[AstNode]:
-  if (not excludeNode) and (node.className == nextNodeClassName): return node
+  if (not excludeNode) and node.className.endswith(suffix): return node
   children = node.children
   if reverse: children = children[::-1]
 
   for child in children:
-    nextNode = goToChild(child, nextNodeClassName, reverse)
+    nextNode = goToChild(child, suffix, reverse)
     if nextNode is not None: return nextNode
 
   return None
