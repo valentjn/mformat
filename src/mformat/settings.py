@@ -15,6 +15,7 @@ class Settings(object):
     self.omitSpaceAfterCommaMaxLength = 1
     self.omitSpaceAroundColon = True
     self.omitSpaceAroundColonMaxLength = 5
+    self.newlineAtEndOfFile = True
 
   def searchAndLoad(self, codeFilePath: str) -> bool:
     curDirPath = os.path.dirname(os.path.abspath(codeFilePath))

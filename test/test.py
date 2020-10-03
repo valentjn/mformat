@@ -12,13 +12,13 @@ class MformatTestCase(unittest.TestCase):
     self.assertEqual(mformat.formatCode(inputCode), expectedCode)
 
   def testOperators(self) -> None:
-    expectedCode = "x = a + (b * (c + d)) + e;"
+    expectedCode = "x = a + (b * (c + d)) + e;\n"
     self.assertFormat("x=a+(b*(c+d))+e;", expectedCode)
     self.assertFormat("x  =  a  +  (  b  *  (  c  +  d  )  )  +  e  ;", expectedCode)
 
   def testBlocks(self) -> None:
-    self.assertFormat("if a;b;end;", "if a\n  b;\nend")
-    self.assertFormat("if a;b; if c ; d; end;end;", "if a\n  b;\n  if c\n    d;\n  end\nend")
+    self.assertFormat("if a;b;end;", "if a\n  b;\nend\n")
+    self.assertFormat("if a;b; if c ; d; end;end;", "if a\n  b;\n  if c\n    d;\n  end\nend\n")
 
   def testFunctions(self) -> None:
     self.assertFormat("""

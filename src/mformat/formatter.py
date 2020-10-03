@@ -31,6 +31,9 @@ def formatAst(ast: AstNode, settings: Settings) -> str:
   code = str(ast)
   code = re.sub(r"([^ ]|^) +$", r"\1", code, flags=re.MULTILINE)
 
+  code = code.rstrip()
+  if settings.newlineAtEndOfFile: code += "\n"
+
   return code
 
 
