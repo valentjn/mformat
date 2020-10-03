@@ -36,30 +36,32 @@ def removeWhitespaces(node: AstNode) -> None:
 
 
 def insertNewlines(ast: AstNode) -> None:
-  node, _ = goToChild(ast, "statement")
-  numberOfNewlines = -1
+  curStatementNode = goToChild(ast, "statement")
+  if curStatementNode is None: return
+  nextStatementNode = goToNextNode(curStatementNode, "statement")
 
-  while node is not None:
-    if (numberOfNewlines == 0) and (str(node) != "\n"):
-      node.insertNewAstNodeAsChild(0, Token("\n", -1, "newline"))
-      insertedNewline = True
-    else:
-      insertedNewline = False
+  while nextStatementNode is not None:
+    newlineNode = goToNextNode(curStatementNode, "newline")
+    numberOfNewlines = 0
 
-    node, numberOfNewlines = goToNextNode(node, "statement", "newline")
-    if insertedNewline: numberOfNewlines -= 1
+    while (newlineNode is not None) and (newlineNode < nextStatementNode):
+      numberOfNewlines += 1
+      newlineNode = goToNextNode(newlineNode, "newline")
+
+    if (numberOfNewlines == 0) and (str(nextStatementNode) != "\n"):
+      curStatementNode.appendNewAstNodeAsChild(Token("\n", -1, "newline"))
+
+    curStatementNode = nextStatementNode
+    nextStatementNode = goToNextNode(nextStatementNode, "statement")
 
 
 
-def goToPrevNode(node: AstNode, nextNodeClassName: str, nodeToCountClassName: Optional[str] = None,
-      nodeCounter: int = 0) -> Tuple[Optional[AstNode], int]:
-  return goToNextNode(node, nextNodeClassName, nodeToCountClassName, nodeCounter, True)
+def goToPrevNode(node: AstNode, nextNodeClassName: str) -> Optional[AstNode]:
+  return goToNextNode(node, nextNodeClassName, True)
 
-def goToNextNode(node: AstNode, nextNodeClassName: str, nodeToCountClassName: Optional[str] = None,
-      nodeCounter: int = 0, reverse: bool = False) -> Tuple[Optional[AstNode], int]:
-  nextNode, nodeCounter = goToChild(node, nextNodeClassName,
-      nodeToCountClassName, nodeCounter, reverse, True)
-  if nextNode is not None: return nextNode, nodeCounter
+def goToNextNode(node: AstNode, nextNodeClassName: str, reverse: bool = False) -> Optional[AstNode]:
+  nextNode = goToChild(node, nextNodeClassName, reverse, True)
+  if nextNode is not None: return nextNode
 
   while node.parent is not None:
     prevNode = node
@@ -69,25 +71,22 @@ def goToNextNode(node: AstNode, nextNodeClassName: str, nodeToCountClassName: Op
         else range(nodeIndex + 1, len(node.children)))
 
     for i in childIndexRange:
-      nextNode, nodeCounter = goToChild(node.children[i], nextNodeClassName,
-          nodeToCountClassName, nodeCounter, reverse)
-      if nextNode is not None: return nextNode, nodeCounter
+      nextNode = goToChild(node.children[i], nextNodeClassName, reverse)
+      if nextNode is not None: return nextNode
 
-  return None, nodeCounter
+  return None
 
-def goToChild(node: AstNode, nextNodeClassName: str, nodeToCountClassName: Optional[str] = None,
-      nodeCounter: int = 0, reverse: bool = False,
-      excludeNode: bool = False) -> Tuple[Optional[AstNode], int]:
-  if (not excludeNode) and (node.className == nextNodeClassName): return (node, nodeCounter)
-  if node.className == nodeToCountClassName: nodeCounter += 1
+def goToChild(node: AstNode, nextNodeClassName: str, reverse: bool = False,
+      excludeNode: bool = False) -> Optional[AstNode]:
+  if (not excludeNode) and (node.className == nextNodeClassName): return node
   children = node.children
   if reverse: children = children[::-1]
 
   for child in children:
-    nextNode, nodeCounter = goToChild(child, nextNodeClassName, nodeToCountClassName, nodeCounter)
-    if nextNode is not None: return nextNode, nodeCounter
+    nextNode = goToChild(child, nextNodeClassName, reverse)
+    if nextNode is not None: return nextNode
 
-  return None, nodeCounter
+  return None
 
 
 

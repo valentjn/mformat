@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 from __future__ import annotations
-from typing import cast, List, Optional, Union
+from typing import cast, List, Optional, Tuple, Union
 
 from .settings import Settings
 from .tokenizer import Token
@@ -64,6 +64,45 @@ class AstNode(object):
     node.parent = self
     self.children.insert(index, node)
     return node
+
+  def _getHierarchy(self) -> List[Tuple[AstNode, int]]:
+    hierarchy = []
+    node = self
+
+    while node.parent is not None:
+      prevNode = node
+      node = node.parent
+      childIndex = node.children.index(prevNode)
+      hierarchy.append((node, childIndex))
+
+    hierarchy.reverse()
+    return hierarchy
+
+  def __lt__(self, other: AstNode) -> bool:
+    if (self == other) or ((self.parent is None) and (other.parent is None)): return False
+
+    selfHierarchy = self._getHierarchy()
+    otherHierarchy = other._getHierarchy()
+
+    if self.parent is None:
+      assert len(otherHierarchy) >= 1
+      return (otherHierarchy[0][0] == self)
+    elif other.parent is None:
+      assert len(selfHierarchy) >= 1
+      return (selfHierarchy[0][0] == other)
+
+    assert len(selfHierarchy) >= 1
+    assert len(otherHierarchy) >= 1
+    if selfHierarchy[0][0] != otherHierarchy[0][0]: return False
+
+    for i in range(min(len(selfHierarchy), len(otherHierarchy))):
+      if selfHierarchy[i][1] != otherHierarchy[i][1]:
+        return selfHierarchy[i][1] < otherHierarchy[i][1]
+
+    return len(selfHierarchy) < len(otherHierarchy)
+
+  def __le__(self, other: AstNode) -> bool:
+    return (self == other) or (self < other)
 
   def __repr__(self, level: int=0) -> str:
     result = "{}{}".format(level * "  ", self.className)
