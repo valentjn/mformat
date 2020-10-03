@@ -37,71 +37,37 @@ def removeWhitespaces(node: AstNode) -> None:
 
 
 def insertNewlinesBetweenStatements(ast: AstNode) -> None:
-  curStatementNode = goToChild(ast, "statement")
+  curStatementNode = ast.goToChild("statement")
   if curStatementNode is None: return
-  nextStatementNode = goToNextNode(curStatementNode, "statement")
+  nextStatementNode = curStatementNode.goToNext("statement")
 
   while nextStatementNode is not None:
-    newlineNode = goToNextNode(curStatementNode, "newline")
+    newlineNode = curStatementNode.goToNext("newline")
     numberOfNewlines = 0
 
     while (newlineNode is not None) and (newlineNode < nextStatementNode):
       numberOfNewlines += 1
-      newlineNode = goToNextNode(newlineNode, "newline")
+      newlineNode = newlineNode.goToNext("newline")
 
     if (numberOfNewlines == 0) and (str(nextStatementNode) != "\n"):
       curStatementNode.appendNewAstNodeAsChild(Token("\n", -1, "newline"))
 
     curStatementNode = nextStatementNode
-    nextStatementNode = goToNextNode(nextStatementNode, "statement")
+    nextStatementNode = nextStatementNode.goToNext("statement")
 
 
 
 def removeSuperfluousSemicolons(ast: AstNode) -> None:
-  blockNode = goToChild(ast, "Block")
+  blockNode = ast.goToChild("Block")
 
   while blockNode is not None:
-    statementNode = goToChild(blockNode, "statement")
+    statementNode = blockNode.goToChild("statement")
     if statementNode is None: break
 
-    while (semicolonNode := goToChild(statementNode, "semicolon")) is not None:
+    while (semicolonNode := statementNode.goToChild("semicolon")) is not None:
       semicolonNode.remove()
 
-    blockNode = goToNextNode(blockNode, "Block")
-
-
-
-def goToPrevNode(node: AstNode, suffix: str) -> Optional[AstNode]:
-  return goToNextNode(node, suffix, True)
-
-def goToNextNode(node: AstNode, suffix: str, reverse: bool = False) -> Optional[AstNode]:
-  nextNode = goToChild(node, suffix, reverse, True)
-  if nextNode is not None: return nextNode
-
-  while node.parent is not None:
-    prevNode = node
-    node = node.parent
-    nodeIndex = node.children.index(prevNode)
-    childIndexRange = (range(nodeIndex - 1, -1, -1) if reverse
-        else range(nodeIndex + 1, len(node.children)))
-
-    for i in childIndexRange:
-      nextNode = goToChild(node.children[i], suffix, reverse)
-      if nextNode is not None: return nextNode
-
-  return None
-
-def goToChild(node: AstNode, suffix: str, reverse: bool = False,
-      excludeNode: bool = False) -> Optional[AstNode]:
-  if (not excludeNode) and node.className.endswith(suffix): return node
-  children = node.children
-  if reverse: children = children[::-1]
-
-  for child in children:
-    nextNode = goToChild(child, suffix, reverse)
-    if nextNode is not None: return nextNode
-
-  return None
+    blockNode = blockNode.goToNext("Block")
 
 
 

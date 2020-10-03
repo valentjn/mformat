@@ -70,6 +70,48 @@ class AstNode(object):
     parentChildren = self.parent.children
     del parentChildren[parentChildren.index(self)]
 
+  def goToParent(self, suffix: str) -> Optional[AstNode]:
+    node = self
+
+    while not node.className.endswith(suffix):
+      if node.parent is None: return None
+      node = node.parent
+
+    return node
+
+  def goToChild(self, suffix: str, reverse: bool = False,
+        excludeNode: bool = False) -> Optional[AstNode]:
+    if (not excludeNode) and self.className.endswith(suffix): return self
+    children = self.children
+    if reverse: children = children[::-1]
+
+    for child in children:
+      nextNode = child.goToChild(suffix, reverse)
+      if nextNode is not None: return nextNode
+
+    return None
+
+  def goToPrev(self, suffix: str) -> Optional[AstNode]:
+    return self.goToNext(suffix, True)
+
+  def goToNext(self, suffix: str, reverse: bool = False) -> Optional[AstNode]:
+    node = self
+    nextNode = node.goToChild(suffix, reverse, True)
+    if nextNode is not None: return nextNode
+
+    while node.parent is not None:
+      prevNode = node
+      node = node.parent
+      nodeIndex = node.children.index(prevNode)
+      childIndexRange = (range(nodeIndex - 1, -1, -1) if reverse
+          else range(nodeIndex + 1, len(node.children)))
+
+      for i in childIndexRange:
+        nextNode = node.children[i].goToChild(suffix, reverse)
+        if nextNode is not None: return nextNode
+
+    return None
+
   def _getHierarchy(self) -> List[Tuple[AstNode, int]]:
     hierarchy = []
     node = self
@@ -192,12 +234,16 @@ def parseStatements(statements: List[List[Token]]) -> AstNode:
         curNode.appendChild(statementAstNode)
         curNode = curNode.appendNewAstNodeAsChild("statementSequence")
       elif keyword in ["case", "catch", "else", "elseif", "otherwise"]:
-        curNode = goUpToParent(curNode, "Block")
+        parent = curNode.goToParent("Block")
+        assert parent is not None
+        curNode = parent
         curNode = curNode.appendNewAstNodeAsChild(keyword)
         curNode.appendChild(statementAstNode)
         curNode = curNode.appendNewAstNodeAsChild("statementSequence")
       elif keyword == "end":
-        curNode = goUpToParent(curNode, "Block")
+        parent = curNode.goToParent("Block")
+        assert parent is not None
+        curNode = parent
         curNode.appendChild(statementAstNode)
         assert curNode.parent is not None
         curNode = curNode.parent
@@ -382,15 +428,6 @@ def divideAndConquerParseStatementFragment(tokens: List[Token], i: int) -> AstNo
   node.appendChild(parseStatementFragment(tokens[:i]))
   node.appendNewAstNodeAsChild(tokens[i])
   node.appendChild(parseStatementFragment(tokens[i+1:]))
-  return node
-
-
-
-def goUpToParent(node: AstNode, parentClassNameSuffix: str) -> AstNode:
-  while not node.className.endswith(parentClassNameSuffix):
-    assert node.parent is not None
-    node = node.parent
-
   return node
 
 
