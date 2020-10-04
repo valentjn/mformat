@@ -25,6 +25,8 @@ class MformatTestCase(unittest.TestCase):
   def testBlocks(self) -> None:
     self.assertFormat("if a;b;end;", "if a\n  b;\nend\n")
     self.assertFormat("if a;b; if c ; d; end;end;", "if a\n  b;\n  if c\n    d;\n  end\nend\n")
+    self.assertFormat("if a;b;elseif c;d;else;e;end;",
+        "if a\n  b;\nelseif c\n  d;\nelse\n  e;\nend\n")
 
   def testFunctions(self) -> None:
     self.assertFormat("""

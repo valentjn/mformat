@@ -83,7 +83,8 @@ def removeSuperfluousSemicolons(ast: AstNode) -> None:
     if blockNode.className == "functionBlock":
       statementNodes = []
     else:
-      statementNodes = [blockNode.goToDescendant("statement"), blockNode.children[-1]]
+      statementNodes = ([x for x in blockNode.children if x.className == "statement"] +
+          [y for x in blockNode.children for y in x.children if y.className == "statement"])
 
     for statementNode in statementNodes:
       if statementNode is None: continue
