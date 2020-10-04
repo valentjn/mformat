@@ -25,6 +25,9 @@ class SettingMetaData(object):
 
 class Settings(object):
   metaData = [
+        SettingMetaData("indentWithSpace", bool,
+          "Indent with spaces",
+          "Indent with tabs"),
         SettingMetaData("indent", int,
           "Number of spaces or tabs to indent a block"),
         SettingMetaData("indentCaseOtherwise", bool,
@@ -57,6 +60,7 @@ class Settings(object):
       ]
 
   def __init__(self) -> None:
+    self.indentWithSpace = True
     self.indent = 2
     self.indentCaseOtherwise = True
     self.indentMainFunction = False

@@ -99,7 +99,8 @@ def removeSuperfluousSemicolons(ast: AstNode) -> None:
 def indent(node: AstNode, settings: Settings) -> None:
   if node.className == "statement":
     if node.blockDepth is not None:
-      indentation = (node.blockDepth * settings.indent) * " "
+      indentationCharacter = (" " if settings.indentWithSpace else "\t")
+      indentation = (node.blockDepth * settings.indent) * indentationCharacter
       index = (1 if (len(node.children) >= 1) and (node.children[0].className == "newline") else 0)
       node.insertNewAstNodeAsChild(index, ArtificialToken(indentation, "whitespace"))
   else:
